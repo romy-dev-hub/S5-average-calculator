@@ -147,7 +147,7 @@ export default function Home() {
           transition={{ delay: 1 }}
           className="mt-12 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm"
         >
-          <p>Made with ❤️ for S5 students | All calculations follow your university's grading system</p>
+          <p>Made with ❤️ by 小罗 for USTHB S5 Students</p>
           <p className="mt-2">Enter valid grades between 0 and 20 for accurate results</p>
         </motion.footer>
       </div>

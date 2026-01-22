@@ -20,7 +20,9 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
   const isValid = moduleAverage > 0 && moduleAverage <= 20;
 
   const handleGradeChange = (field: keyof ModuleGrades, value: string) => {
-    const numValue = parseFloat(value) || undefined;
+    // Replace comma with period to handle mobile keyboards that use comma as decimal separator
+    const normalizedValue = value.replace(',', '.');
+    const numValue = parseFloat(normalizedValue) || undefined;
     onGradeChange(module.id, { ...grades, [field]: numValue });
   };
 

@@ -50,7 +50,7 @@ A beautiful, responsive, and intuitive grade calculator for USTHB S5 Computer Sc
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/s5-average-calculator.git
+   git clone https://github.com/romy-dev-hub/s5-average-calculator.git
    cd s5-average-calculator
    ```
 
@@ -104,12 +104,6 @@ s5-average-calculator/
     ├── me.jpg           # Creator photo
     └── icon.svg         # Favicon
 ```
-
-## 📸 Screenshots
-
-<div align="center">
-  <img src="public/cover.gif" alt="App Preview" width="600"/>
-</div>
 
 ## 🧮 Calculation Methods
 
