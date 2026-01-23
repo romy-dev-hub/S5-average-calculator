@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Module, ModuleGrades } from '@/types';
 import { calculateModuleAverage } from '@/utils/calculations';
@@ -15,29 +15,62 @@ interface ModuleCardProps {
 
 export default function ModuleCard({ module, grades, onGradeChange }: ModuleCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  // Local state to preserve input strings (including trailing decimal points)
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
+
+  // Clear local input state when grades are reset externally
+  useEffect(() => {
+    // Clear input values for fields that became undefined
+    setInputValues(prev => {
+      const updated = { ...prev };
+      (['tp', 'td', 'exam'] as const).forEach(field => {
+        if (grades[field] === undefined && prev[field]) {
+          delete updated[field];
+        }
+      });
+      return updated;
+    });
+  }, [grades]);
 
   const moduleAverage = calculateModuleAverage(module, grades);
   const isValid = moduleAverage > 0 && moduleAverage <= 20;
 
   const handleGradeChange = (field: keyof ModuleGrades, value: string) => {
     // Replace comma with period to handle mobile keyboards that use comma as decimal separator
-    const normalizedValue = value.replace(',', '.');
+    const normalizedValue = value.replace(/,/g, '.');
 
-    // Only allow valid numeric input (empty, or valid number between 0-20)
-    if (normalizedValue === '' || normalizedValue === '.') {
+    // Allow empty input
+    if (normalizedValue === '') {
+      setInputValues(prev => ({ ...prev, [field]: '' }));
       onGradeChange(module.id, { ...grades, [field]: undefined });
       return;
     }
 
-    // Check if it's a valid number format
+    // Check if it's a valid number format (including partial like "12." or ".5")
     if (!/^\d*\.?\d*$/.test(normalizedValue)) {
       return; // Invalid format, don't update
     }
 
+    // Update the display value immediately
+    setInputValues(prev => ({ ...prev, [field]: normalizedValue }));
+
+    // Only update the actual grade if it's a complete valid number
     const numValue = parseFloat(normalizedValue);
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 20) {
       onGradeChange(module.id, { ...grades, [field]: numValue });
+    } else if (normalizedValue === '.' || normalizedValue.endsWith('.')) {
+      // Don't update grade for partial inputs like "12." but keep the display
+      // The grade will use the last valid value
     }
+  };
+
+  // Get display value - use local state if available, otherwise use the grade value
+  const getDisplayValue = (field: keyof ModuleGrades): string => {
+    if (inputValues[field] !== undefined) {
+      return inputValues[field];
+    }
+    const gradeValue = grades[field];
+    return gradeValue !== undefined ? String(gradeValue) : '';
   };
 
   const getCalculationFormula = () => {
@@ -93,7 +126,7 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
               type="text"
               inputMode="decimal"
               pattern="[0-9]*[.,]?[0-9]*"
-              value={grades.tp ?? ''}
+              value={getDisplayValue('tp')}
               onChange={(e) => handleGradeChange('tp', e.target.value)}
               className="w-full px-3 sm:px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 transition-colors"
               placeholder="0-20"
@@ -108,7 +141,7 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
               type="text"
               inputMode="decimal"
               pattern="[0-9]*[.,]?[0-9]*"
-              value={grades.td ?? ''}
+              value={getDisplayValue('td')}
               onChange={(e) => handleGradeChange('td', e.target.value)}
               className="w-full px-3 sm:px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 transition-colors"
               placeholder="0-20"
@@ -123,7 +156,7 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
               type="text"
               inputMode="decimal"
               pattern="[0-9]*[.,]?[0-9]*"
-              value={grades.exam ?? ''}
+              value={getDisplayValue('exam')}
               onChange={(e) => handleGradeChange('exam', e.target.value)}
               className="w-full px-3 sm:px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 transition-colors"
               placeholder="0-20"
