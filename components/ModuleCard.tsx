@@ -22,8 +22,22 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
   const handleGradeChange = (field: keyof ModuleGrades, value: string) => {
     // Replace comma with period to handle mobile keyboards that use comma as decimal separator
     const normalizedValue = value.replace(',', '.');
-    const numValue = parseFloat(normalizedValue) || undefined;
-    onGradeChange(module.id, { ...grades, [field]: numValue });
+
+    // Only allow valid numeric input (empty, or valid number between 0-20)
+    if (normalizedValue === '' || normalizedValue === '.') {
+      onGradeChange(module.id, { ...grades, [field]: undefined });
+      return;
+    }
+
+    // Check if it's a valid number format
+    if (!/^\d*\.?\d*$/.test(normalizedValue)) {
+      return; // Invalid format, don't update
+    }
+
+    const numValue = parseFloat(normalizedValue);
+    if (!isNaN(numValue) && numValue >= 0 && numValue <= 20) {
+      onGradeChange(module.id, { ...grades, [field]: numValue });
+    }
   };
 
   const getCalculationFormula = () => {
@@ -76,12 +90,10 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">TP Note</label>
             <input
-              type="number"
-              min="0"
-              max="20"
-              step="0.01"
+              type="text"
               inputMode="decimal"
-              value={grades.tp || ''}
+              pattern="[0-9]*[.,]?[0-9]*"
+              value={grades.tp ?? ''}
               onChange={(e) => handleGradeChange('tp', e.target.value)}
               className="w-full px-3 sm:px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 transition-colors"
               placeholder="0-20"
@@ -93,12 +105,10 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">TD Note</label>
             <input
-              type="number"
-              min="0"
-              max="20"
-              step="0.01"
+              type="text"
               inputMode="decimal"
-              value={grades.td || ''}
+              pattern="[0-9]*[.,]?[0-9]*"
+              value={grades.td ?? ''}
               onChange={(e) => handleGradeChange('td', e.target.value)}
               className="w-full px-3 sm:px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 transition-colors"
               placeholder="0-20"
@@ -110,16 +120,13 @@ export default function ModuleCard({ module, grades, onGradeChange }: ModuleCard
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Exam Note</label>
             <input
-              type="number"
-              min="0"
-              max="20"
-              step="0.01"
+              type="text"
               inputMode="decimal"
-              value={grades.exam || ''}
+              pattern="[0-9]*[.,]?[0-9]*"
+              value={grades.exam ?? ''}
               onChange={(e) => handleGradeChange('exam', e.target.value)}
               className="w-full px-3 sm:px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-400 transition-colors"
               placeholder="0-20"
-              required
             />
           </div>
         )}
